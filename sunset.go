@@ -25,8 +25,8 @@ type Result struct {
 }
 
 type results struct {
-	Results []Result `json:"results"`
-	Status  string   `json:"status"`
+	Result *Result `json:"results"`
+	Status string  `json:"status"`
 }
 
 // GetResult retrieve a new result from sunrise-sunset.org API. Returns the API result or any errors encountered.
@@ -62,9 +62,26 @@ func GetResult(lat, lng float32) (*Result, error) {
 		return nil, fmt.Errorf("Error in API response. Status: %s", apiResults.Status)
 	}
 
-	if len(apiResults.Results) == 0 {
+	if apiResults.Result == nil {
 		return nil, fmt.Errorf("No results returned by API")
 	}
 
-	return &apiResults.Results[0], nil
+	return apiResults.Result, nil
+}
+
+// ToLocal returns this API results with all times in local timezone time
+func (me Result) ToLocal() *Result {
+
+	return &Result{
+		Sunrise:                   me.Sunrise.Local(),
+		Sunset:                    me.Sunset.Local(),
+		DayLength:                 me.DayLength,
+		SolarNoon:                 me.SolarNoon.Local(),
+		CivilTwilightBegin:        me.CivilTwilightBegin.Local(),
+		CivilTwilightEnd:          me.CivilTwilightEnd.Local(),
+		NauticalTwilightBegin:     me.NauticalTwilightBegin.Local(),
+		NauticalTwilightEnd:       me.NauticalTwilightEnd.Local(),
+		AstronomicalTwilightBegin: me.AstronomicalTwilightBegin.Local(),
+		AstronomicalTwilightEnd:   me.AstronomicalTwilightEnd.Local(),
+	}
 }
